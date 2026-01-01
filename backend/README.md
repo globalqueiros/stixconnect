@@ -2,7 +2,7 @@
 
 Backend API para a plataforma de telemedicina StixConnect.
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Opção 1: Docker (Recomendado)
 
@@ -53,7 +53,7 @@ npm start
 
 O servidor será iniciado em `http://localhost:3001`
 
-## 📁 Estrutura do Projeto
+##  Estrutura do Projeto
 
 ```
 backend/
@@ -87,7 +87,7 @@ backend/
 └── .env.docker             # Variáveis para Docker
 ```
 
-## 🔧 Endpoints Principais
+##  Endpoints Principais
 
 ### Autenticação
 - `POST /api/auth/login` - Login de profissional
@@ -115,7 +115,7 @@ backend/
 - `GET /api/admin/consultas` - Listar todas as consultas
 - `GET /api/admin/profissionais` - Listar profissionais
 
-## 🗄️ Banco de Dados
+##  Banco de Dados
 
 O projeto utiliza **MariaDB** com as seguintes tabelas principais:
 
@@ -125,7 +125,7 @@ O projeto utiliza **MariaDB** com as seguintes tabelas principais:
 - `zoom_meetings` - Reuniões Zoom criadas
 - `consulta_status_history` - Histórico de alterações de status
 
-## 🔐 Segurança
+##  Segurança
 
 - Autenticação JWT para proteger endpoints
 - Validação de dados com Zod schemas
@@ -133,17 +133,17 @@ O projeto utiliza **MariaDB** com as seguintes tabelas principais:
 - CORS configurado para desenvolvimento
 - Helmet para headers de segurança
 
-## 📊 Logs
+##  Logs
 
 Os logs são salvos em:
 - `logs/combined.log` - Todos os logs
 - `logs/error.log` - Apenas erros
 
-## 🧪 Testes
+##  Testes
 
 Siga o guia completo em [TEST_GUIDE.md](TEST_GUIDE.md) para testar todos os endpoints.
 
-## 🌐 Variáveis de Ambiente
+##  Variáveis de Ambiente
 
 Copie `.env.example` para `.env` e configure:
 
@@ -165,14 +165,14 @@ NODE_ENV=development
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-## 📝 Notas Importantes
+##  Notas Importantes
 
 1. **Zoom API**: Configure as credenciais da Zoom API no painel de desenvolvedores Zoom
 2. **Banco de Dados**: Execute o schema.sql para criar as tabelas necessárias
 3. **Senhas**: Os usuários de exemplo usam hash simulado - configure senhas reais em produção
 4. **JWT**: Mantenha o JWT_SECRET seguro em ambiente de produção
 
-## 🚀 Deploy
+##  Deploy
 
 Para deploy em produção:
 
@@ -182,6 +182,6 @@ Para deploy em produção:
 4. Configure backup do banco de dados
 5. Monitore logs e performance
 
-## 📞 Suporte
+##  Suporte
 
 Para dúvidas ou problemas, consulte o [TEST_GUIDE.md](TEST_GUIDE.md) ou abra uma issue.
