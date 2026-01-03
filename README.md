@@ -1,151 +1,148 @@
-# StixConnect
+# Stixconnect - Guia de Instalação e Execução
 
-Plataforma de telemedicina completa para consultas médicas online, desenvolvida com tecnologias modernas e integrada ao Zoom.
+Este guia fornece instruções passo a passo para configurar e executar o ambiente de desenvolvimento completo da aplicação Stixconnect, incluindo o banco de dados, o backend e o frontend.
 
-##  Sobre o Projeto
+## Arquitetura do Projeto
 
-StixConnect é uma solução de telemedicina que conecta pacientes a profissionais de saúde através de videochamadas seguras. O sistema oferece fluxo completo de triagem, atendimento médico e gerenciamento administrativo.
+Abaixo está um diagrama que ilustra a arquitetura geral da aplicação.
 
-### Componentes Principais
+```mermaid
+graph TD
+    subgraph Frontend
+        A[Nexus Admin]
+        B[Stixconnect]
+    end
 
-- **Backend** (Node.js/Express) - API RESTful com MariaDB
-- **Frontend Paciente** (Next.js/TypeScript) - Interface para pacientes agendarem e realizarem consultas
-- **Painel Admin** (Next.js/TypeScript) - Dashboard para gestão da plataforma
+    subgraph Backend
+        C[API Node.js]
+    end
 
-##  Funcionalidades
+    subgraph Database
+        D[MariaDB]
+    end
 
-### Para Pacientes
-- Agendamento de consultas online
-- Triagem digital automatizada
-- Videochamadas via Zoom SDK
-- Acompanhamento do status da consulta
-- Histórico médico
-
-### Para Profissionais
-- Dashboard de pacientes em espera
-- Interface de triagem para enfermagem
-- Salas de consulta virtuais
-- Encaminhamento entre especialidades
-- Registro de prontuário
-
-### Administrativo
-- Gestão de usuários e profissionais
-- Relatórios de consultas
-- Configuração do sistema
-- Monitoramento em tempo real
-
-##  Stack Tecnológico
-
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Banco de Dados**: MariaDB
-- **Validação**: Zod
-- **Autenticação**: JWT + BCrypt
-- **Logging**: Winston
-
-### Frontend
-- **Framework**: Next.js 15
-- **Linguagem**: TypeScript
-- **Estilização**: Tailwind CSS + Bootstrap
-- **Videoconferência**: Zoom SDK
-- **HTTP Client**: Axios
-
-### DevOps
-- **Containerização**: Docker + Docker Compose
-- **Banco de Dados**: MariaDB Container
-- **Controle de Versão**: Git
-
-##  Estrutura do Projeto
-
-```
-stixconnect/
-├── backend/                 # API Node.js
-│   ├── routes/             # Endpoints da API
-│   ├── services/           # Lógica de negócio
-│   ├── database/           # Configuração do banco
-│   └── utils/              # Utilitários
-├── stixconnect/           # Frontend pacientes
-│   └── src/
-│       ├── app/           # Páginas Next.js
-│       ├── components/    # Componentes React
-│       └── lib/           # Utilitários
-├── nexus_admin/           # Painel administrativo
-│   └── src/
-│       └── app/           # Dashboard e gestão
-└── README.md
+    A -->|Requisições API| C
+    B -->|Requisições API| C
+    C -->|Consultas| D
 ```
 
-##  Instalação e Execução
+## Pré-requisitos
 
-### Pré-requisitos
-- Node.js 18+
-- MariaDB
-- Docker (opcional)
-- Conta Zoom (para videochamadas)
+Antes de começar, certifique-se de que você tem os seguintes softwares instalados em sua máquina:
 
-### Backend
-```bash
-cd backend
-npm install
-npm run dev
+- [Node.js](https://nodejs.org/) (versão 18 ou superior)
+- [Docker](https://www.docker.com/products/docker-desktop/)
+- [Git](https://git-scm.com/)
+
+## 1. Configuração do Banco de Dados
+
+O banco de dados MariaDB é executado em um contêiner Docker. Para iniciá-lo, siga os passos abaixo:
+
+1.  **Navegue até o diretório do backend:**
+    ```bash
+    cd backend
+    ```
+
+2.  **Inicie os serviços do Docker Compose:**
+    Este comando irá construir e iniciar o contêiner do banco de dados em segundo plano.
+    ```bash
+    docker-compose up -d
+    ```
+
+    ```mermaid
+    sequenceDiagram
+        participant User
+        participant Docker
+        participant MariaDB Container
+
+        User->>Docker: Executa `docker-compose up -d`
+        Docker->>MariaDB Container: Inicia o contêiner
+        MariaDB Container-->>Docker: Serviço pronto
+        Docker-->>User: Contêiner em execução
+    ```
+
+## 2. Configuração do Backend
+
+O backend é uma aplicação Node.js.
+
+1.  **Acesse o diretório `backend`:**
+    ```bash
+    cd backend
+    ```
+
+2.  **Copie o arquivo de ambiente:**
+    ```bash
+    cp .env.example .env
+    ```
+    *Observação: Edite o arquivo `.env` se precisar alterar as credenciais do banco de dados ou outras configurações.*
+
+3.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+4.  **Inicie o servidor:**
+    ```bash
+    npm start
+    ```
+    O servidor backend estará em execução em `http://localhost:3001`.
+
+## 3. Configuração do Frontend
+
+O projeto possui duas aplicações frontend: `nexus_admin` e `stixconnect`. As instruções abaixo são para a aplicação principal `stixconnect`.
+
+### Stixconnect (Aplicação Principal)
+
+1.  **Acesse o diretório da aplicação:**
+    ```bash
+    cd stixconnect/stixconnect
+    ```
+
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+3.  **Inicie a aplicação de desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+    A aplicação estará acessível em `http://localhost:3000`.
+
+### Nexus Admin (Aplicação de Administração)
+
+1.  **Acesse o diretório da aplicação:**
+    ```bash
+    cd nexus_admin/nexus_admin
+    ```
+
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+3.  **Inicie a aplicação de desenvolvimento:**
+    ```bash"
+    npm run dev
+    ```
+    A aplicação de administração estará acessível em um endereço diferente, geralmente `http://localhost:3002` (verifique o output do terminal).
+
+## Resumo do Fluxo de Execução
+
+```mermaid
+graph TD
+    subgraph Terminal 1
+        A(cd backend && docker-compose up -d) --> B(npm start)
+    end
+
+    subgraph Terminal 2
+        C(cd stixconnect/stixconnect && npm run dev)
+    end
+
+    subgraph Terminal 3
+        D(cd nexus_admin/nexus_admin && npm run dev)
+    end
+
+    B --> |Backend rodando em :3001| C
+    B --> |Backend rodando em :3001| D
 ```
-
-### Frontend Paciente
-```bash
-cd stixconnect/stixconnect
-npm install
-npm run dev
-```
-
-### Painel Administrativo
-```bash
-cd nexus_admin/nexus_admin
-npm install
-npm run dev
-```
-
-### Docker (recomendado)
-```bash
-docker-compose up -d
-```
-
-##  Configuração
-
-### Variáveis de Ambiente
-Copie os arquivos `.env.example` para `.env` e configure:
-- Credenciais do banco de dados
-- Chaves da API Zoom
-- Segredos JWT
-
-### Banco de Dados
-O sistema criará automaticamente as tabelas necessárias no primeiro.
-
-##  Fluxo de Consulta
-
-1. **Paciente** realiza triagem online
-2. **Sistema** classifica prioridade e specialidade
-3. **Enfermeira** avalia triagem e encaminha
-4. **Médico** realiza consulta via videochamada
-5. **Sistema** registra atendimento e atualiza status
-
-##  Segurança
-
-- Validação de inputs com Zod
-- Autenticação JWT
-- Criptografia de senhas BCrypt
-- Rate limiting em APIs
-- CORS configurado
-
-##  Testes
-
-```bash
-# Backend
-cd backend && npm test
-
-# Frontend
-cd stixconnect/stixconnect && npm run test
-
----
-
-**StixConnect** - Conectando saúde e tecnologia

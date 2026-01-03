@@ -10,9 +10,6 @@ out/
 build/
 dist/
 
-# Environment variables
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -134,11 +131,10 @@ start-*.bat
 iniciar-*.bat
 
 # HTML test files
-videochamada-teste.html
+
 
 # Documentation that shouldn't be in repo
 GEMINI.md
-DOCKER_GUIDE.md
 stixconnect-dev-docs.md
 
 # Lock files (keep package-lock.json but exclude others)
