@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import db from "../../../lib/db";
-import { rateLimit } from "../../../../lib/rateLimit";
+import db from "../../../../../lib/database";
+import { rateLimit } from "../../../../../lib/rateLimit";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Apply rate limiting
   const rateLimitResult = rateLimit({
@@ -17,7 +17,7 @@ export async function POST(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { role } = await req.json();
 
     if (!role) {
@@ -48,20 +48,19 @@ export async function POST(
 
       // Update consultation status
       await connection.execute(
-        `UPDATE tb_consultas 
+        `UPDATE consultas 
          SET status = ?, 
-             data_hora_inicio_atendimento = NOW(),
-             updated_at = NOW()
+             data_hora_inicio_atendimento = NOW()
          WHERE id = ?`,
         [newStatus, id]
       );
 
       // Add to status history
       await connection.execute(
-        `INSERT INTO tb_consulta_status_history 
-         (id_consulta, status_anterior, status_novo, data_alteracao, alterado_por)
+        `INSERT INTO consulta_status_history 
+         (consulta_id, status_anterior, status_novo, data_alteracao, profissional_id)
          SELECT id, status, ?, NOW(), ?
-         FROM tb_consultas 
+         FROM consultas 
          WHERE id = ?`,
         [newStatus, role, id]
       );

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "../../../../lib/db";
+import db from "../../../../../lib/database";
 
 export async function GET(
   request: Request,
@@ -20,8 +20,8 @@ export async function GET(
           c.saude_mental     AS clinicoSaudeMental,
           c.vacinacao      AS clinicoVacinacao,
           c.observacoes    AS clinicoObservacoes
-        FROM tb_paciente p
-        LEFT JOIN tb_clinico c
+        FROM pacientes p
+        LEFT JOIN pacientes_clinico c
           ON c.paciente_id = p.idPaciente
         WHERE p.numProntuario = ?
       `,

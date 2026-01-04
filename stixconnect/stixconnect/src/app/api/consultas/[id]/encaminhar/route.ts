@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import db from "../../../lib/db";
-import { rateLimit } from "../../../../lib/rateLimit";
+import db from "../../../../../lib/database";
+import { rateLimit } from "../../../../../lib/rateLimit";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Apply rate limiting
   const rateLimitResult = rateLimit({
@@ -17,7 +17,7 @@ export async function POST(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { to, role } = await req.json();
 
     if (!to || !role) {
@@ -48,7 +48,7 @@ export async function POST(
 
       // Get current status first
       const [currentRows] = await connection.execute(
-        `SELECT status FROM tb_consultas WHERE id = ?`,
+        `SELECT status FROM consultas WHERE id = ?`,
         [id]
       );
 
@@ -63,7 +63,7 @@ export async function POST(
 
       // Update consultation status
       await connection.execute(
-        `UPDATE tb_consultas 
+         `UPDATE consultas
          SET status = ?, 
              updated_at = NOW()
          WHERE id = ?`,
@@ -72,7 +72,7 @@ export async function POST(
 
       // Add to status history
       await connection.execute(
-        `INSERT INTO tb_consulta_status_history 
+         `INSERT INTO consulta_status_history
          (id_consulta, status_anterior, status_novo, data_alteracao, alterado_por)
          VALUES (?, ?, ?, NOW(), ?)`,
         [id, currentStatus, newStatus, role]

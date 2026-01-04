@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "../../lib/db";
+import db from "../../../lib/database";
 
 export async function POST(req: Request) {
   try {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     } = body;
 
     const [pacienteResult]: any = await db.query(
-      `INSERT INTO tb_paciente (
+      `INSERT INTO pacientes (
         numProntuario, nome, dataNascimento, email, wappNumber, estadocivil, genero,
         endereco, bairro, complemento, cidade, estado, cep, nomePlano
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     const idPaciente = pacienteResult.insertId;
 
     await db.query(
-      `INSERT INTO tb_clinico
+      `INSERT INTO pacientes_clinico
       (paciente_id, alergias, medicacoes, condicoes_especiais, habitos, saude_mental, vacinacao, observacoes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [

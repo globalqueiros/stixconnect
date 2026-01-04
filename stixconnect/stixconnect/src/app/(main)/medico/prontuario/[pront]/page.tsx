@@ -35,7 +35,7 @@ export default function ProntuarioPage() {
       setErro(null);
 
       try {
-        const res = await fetch(`/api/prontuario/${pront}`);
+        const res = await fetch(`/enfermagem/api/prontuario/${pront}`);
         const data = await res.json();
 
         if (!res.ok) {

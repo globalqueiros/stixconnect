@@ -12,9 +12,11 @@ const triagemRoutes = require('./routes/triagem');
 const consultaRoutes = require('./routes/consultas');
 const consultasApiRoutes = require('./routes/consultas_api');
 const consultasExtendedRoutes = require('./routes/consultas_extended');
+const consultasCriarRoutes = require('./routes/consultas-criar');
 const zoomRoutes = require('./routes/zoom');
 const adminRoutes = require('./routes/admin');
 const testRoutes = require('./routes/teste');
+const testConsultasRoutes = require('./routes/test-consultas');
 const { router: authRoutes, authenticateToken } = require('./routes/auth');
 const { router: pacientesAuthRoutes, authenticatePatientToken } = require('./routes/pacientes_auth');
 
@@ -73,6 +75,9 @@ app.use('/api/consultas', consultasApiRoutes);
 console.log('Loading consultas extended routes...', typeof consultasExtendedRoutes);
 app.use('/api/consultas', consultasExtendedRoutes);
 
+console.log('Loading consultas criar routes...', typeof consultasCriarRoutes);
+app.use('/api/consultas', consultasCriarRoutes);
+
 console.log('Loading zoom routes...', typeof zoomRoutes);
 app.use('/api/zoom', zoomRoutes);
 
@@ -84,6 +89,9 @@ app.use('/api/teste', testRoutes);
 
 console.log('Loading paciente auth routes...', typeof pacientesAuthRoutes);
 app.use('/api/pacientes/auth', pacientesAuthRoutes);
+
+console.log('Loading test consultation routes...', typeof testConsultasRoutes);
+app.use('/api/test', testConsultasRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

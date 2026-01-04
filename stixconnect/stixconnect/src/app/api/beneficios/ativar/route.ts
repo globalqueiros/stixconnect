@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import pool from '../../../../lib/dbs';
+import pool from '../../../lib/dbs';
 
 export async function POST(req: Request) {
   const { usuarioId, beneficioId } = await req.json();

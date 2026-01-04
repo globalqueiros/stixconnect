@@ -1,14 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  ZoomClient, 
-  ClientType,
-  ConnectionState,
-  VideoQuality,
-  SessionState,
-  Participant 
-} from '@zoom/videosdk';
+import ZoomVideo from '@zoom/videosdk';
 import axios from 'axios';
 
 interface VideoCallProps {
@@ -30,7 +23,7 @@ const VideoCall: React.FC<VideoCallProps> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [participants, setParticipants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<string>('disconnected');
@@ -51,38 +44,51 @@ const VideoCall: React.FC<VideoCallProps> = ({
           userName
         });
         
-        const { sessionToken, meetingId } = response.data;
+        const { signature, sessionName, password } = response.data;
 
-        // Initialize Zoom client
-        const client = ZoomClient.createClient({
-          type: ClientType.ShareScreen
-        });
+        // Initialize Zoom client with correct SDK v2.3.5 syntax
+        const client = ZoomVideo.createClient();
 
-        // Initialize session
-        const zoomSession = client.initSession(sessionToken);
-        
-        zoomSession.on('connectionChange', (state: ConnectionState) => {
-          setConnectionState(state);
-          if (state === 'connected') {
+        // Initialize the client
+        await client.init('en-US');
+
+        // Set up event listeners before joining
+        client.on('connection-change', (payload: any) => {
+          setConnectionState(payload.state);
+          if (payload.state === 'connected') {
             setIsConnected(true);
           }
         });
 
-        zoomSession.on('userAdded', (participants: Participant[]) => {
-          setParticipants(prev => [...prev, ...participants]);
+        client.on('user-added', (payload: any) => {
+          setParticipants(prev => [...prev, payload.payload]);
         });
 
-        zoomSession.on('userRemoved', (userId: string) => {
-          setParticipants(prev => prev.filter(p => p.userId !== userId));
+        client.on('user-removed', (payload: any) => {
+          setParticipants(prev => prev.filter(p => p.userId !== payload.payload.userId));
         });
 
-        await zoomSession.join(meetingId, {
-          userName,
-          audio: true,
-          video: true
+        client.on('peer-video-state-change', (payload: any) => {
+          // Handle video state changes
+          console.log('Video state changed:', payload);
         });
 
-        setSession(zoomSession);
+        client.on('peer-audio-state-change', (payload: any) => {
+          // Handle audio state changes
+          console.log('Audio state changed:', payload);
+        });
+
+        // Join the session
+        await client.join(signature, sessionName, userName, password);
+
+        // Get media stream after joining
+        const stream = client.getMediaStream();
+        
+        // Start with audio muted and video off
+        await stream.muteAudio();
+        await stream.stopVideo();
+
+        setSession(client);
         setIsLoading(false);
 
       } catch (err) {
@@ -106,11 +112,12 @@ const VideoCall: React.FC<VideoCallProps> = ({
     if (!session) return;
     
     try {
+      const stream = session.getMediaStream();
       if (isAudioOn) {
-        await session.muteAudio();
+        await stream.muteAudio();
         setIsAudioOn(false);
       } else {
-        await session.unmuteAudio();
+        await stream.unmuteAudio();
         setIsAudioOn(true);
       }
     } catch (err) {
@@ -123,11 +130,12 @@ const VideoCall: React.FC<VideoCallProps> = ({
     if (!session) return;
     
     try {
+      const stream = session.getMediaStream();
       if (isVideoOn) {
-        await session.stopVideo();
+        await stream.stopVideo();
         setIsVideoOn(false);
       } else {
-        await session.startVideo();
+        await stream.startVideo();
         setIsVideoOn(true);
       }
     } catch (err) {

@@ -23,14 +23,17 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   const ROLE_ROUTES: Record<number, string> = {
+    1: "/paciente",      // paciente básico
+    2: "/paciente",      // paciente premium
+    3: "/paciente",      // paciente VIP
     4: "/atendente",
     5: "/medico",
     6: "/enfermeiro",
     7: "/fisioterapeuta",
     8: "/cuidador",
     9: "/nutricionista",
-    10: "/cabeleireiro",
-    11: "/psicologa",
+    10: "/cabineleiro",
+    11: "/psicologia",
     12: "/fonoaudiologia",
     13: "/acupuntura",
     14: "/psicopedagogia-clinica",

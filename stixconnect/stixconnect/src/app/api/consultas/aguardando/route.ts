@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "../../lib/db";
+import db from "../../../../lib/database";
 import { rateLimit } from "../../../../lib/rateLimit";
 
 export async function GET(req: Request) {
@@ -42,8 +42,8 @@ export async function GET(req: Request) {
           DATE_FORMAT(c.data_hora_chegada, '%Y-%m-%d %H:%i:%s') as dataChegada,
           c.dados_triagem,
           c.status
-        FROM tb_consultas c
-        INNER JOIN tb_pacientes p ON c.idPaciente = p.id
+        FROM consultas c
+        INNER JOIN pacientes p ON c.idPaciente = p.id
         WHERE c.status IN ('triagem', 'aguardando_enfermeira')
         ORDER BY 
           CASE 
@@ -66,8 +66,8 @@ export async function GET(req: Request) {
           DATE_FORMAT(c.data_hora_chegada, '%Y-%m-%d %H:%i:%s') as dataChegada,
           c.dados_triagem,
           c.status
-        FROM tb_consultas c
-        INNER JOIN tb_pacientes p ON c.idPaciente = p.id
+        FROM consultas c
+        INNER JOIN pacientes p ON c.idPaciente = p.id
         WHERE c.status = 'aguardando_medico'
         ORDER BY 
           CASE 
@@ -90,8 +90,8 @@ export async function GET(req: Request) {
           DATE_FORMAT(c.data_hora_chegada, '%Y-%m-%d %H:%i:%s') as dataChegada,
           c.dados_triagem,
           c.status
-        FROM tb_consultas c
-        INNER JOIN tb_pacientes p ON c.idPaciente = p.id
+        FROM consultas c
+        INNER JOIN pacientes p ON c.idPaciente = p.id
         WHERE c.status IN ('triagem', 'aguardando_enfermeira', 'aguardando_medico')
         ORDER BY 
           CASE 

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import db from "../../../lib/db";
+import db from "../../../../lib/database";
 import { rateLimit } from "../../../../lib/rateLimit";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Apply rate limiting
   const rateLimitResult = rateLimit({
@@ -17,7 +17,7 @@ export async function POST(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const triageData = await req.json();
 
     // Validate required fields
@@ -116,7 +116,7 @@ export async function POST(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Apply rate limiting
   const rateLimitResult = rateLimit({
@@ -129,7 +129,7 @@ export async function GET(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Get triage data for consultation
     const [rows] = await db.execute(

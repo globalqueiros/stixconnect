@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import pool from "../../../../lib/db";
+import db from "../../../../../lib/database";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const pacienteId = params.id;
+  const pacienteId = (await params).id;
 
   if (!pacienteId) {
     return NextResponse.json(
@@ -16,7 +16,7 @@ export async function GET(
 
   let conn;
   try {
-    conn = await pool.getConnection();
+    conn = await db.getConnection();
 
     const [rows] = await conn.query(
       "SELECT * FROM servicos WHERE paciente_id = ? AND tipo = 'avulso'",

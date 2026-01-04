@@ -1,4 +1,4 @@
-import { db } from '../../../lib/db'; // Certifique-se de que o caminho está correto
+import db from '../../lib/db'; // Certifique-se de que o caminho está correto
 import { RowDataPacket } from 'mysql2'; // Importar RowDataPacket
 
 // Tipo para os resultados da consulta

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import db from "../../../../lib/db";
+import db from "../../../../../lib/database";
 
 export async function GET(
   req: Request,
-  { params }: { params: { idPaciente: string } }
+  { params }: { params: Promise<{ idPaciente: string }> }
 ) {
-  const { idPaciente } = params;
+  const { idPaciente } = await params;
 
   const [rows] = await db.query(
     `

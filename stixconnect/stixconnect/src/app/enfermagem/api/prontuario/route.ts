@@ -1,16 +1,5 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT) || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+import db from "../../../../lib/database";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -25,7 +14,6 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    const db = pool; 
     const like = `%${search}%`;
 
     const [rows] = await db.execute(
@@ -37,7 +25,7 @@ export async function GET(request: Request) {
         cpf,
         endereco,
         cidade
-      FROM tb_paciente
+      FROM pacientes
       WHERE nome LIKE ? OR cpf LIKE ? OR numProntuario LIKE ?
       ORDER BY numProntuario DESC
       LIMIT ? OFFSET ?`,
@@ -46,7 +34,7 @@ export async function GET(request: Request) {
 
     const [countRows]: any = await db.execute(
       `SELECT COUNT(*) AS total
-      FROM tb_paciente
+      FROM pacientes
       WHERE nome LIKE ? OR cpf LIKE ? OR numProntuario LIKE ?`,
       [like, like, like]
     );

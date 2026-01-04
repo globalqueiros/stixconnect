@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import pool from "@/lib/des";
+import db from "../../../lib/database";
 
 export async function GET() {
   try {
     const company = "Stixmed";
 
-    const [rows]: any = await pool.query(
+    const [rows]: any = await db.query(
       "SELECT * FROM protocol WHERE company = ? ORDER BY created DESC LIMIT 3",
       [company]
     );

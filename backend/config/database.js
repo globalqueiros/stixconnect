@@ -1,25 +1,39 @@
-const mysql = require('mysql2/promise');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
+const path = require('path');
 const logger = require('../utils/logger');
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'stixconnect',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  idleTimeout: 60000,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
-});
+// SQLite database configuration
+const dbPath = path.join(__dirname, '..', 'data', 'stixconnect_test.db');
+let db;
+
+// Initialize database connection
+async function initializeDatabase() {
+  try {
+    db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database
+    });
+    
+    // Enable foreign keys
+    await db.exec('PRAGMA foreign_keys = ON');
+    
+    logger.info('SQLite database connection successful');
+    return true;
+  } catch (error) {
+    logger.error('SQLite database connection failed:', error);
+    return false;
+  }
+}
 
 // Test connection
 async function testConnection() {
+  if (!db) {
+    return await initializeDatabase();
+  }
+  
   try {
-    const connection = await pool.getConnection();
-    await connection.ping();
-    connection.release();
+    await db.get('SELECT 1');
     logger.info('Database connection successful');
     return true;
   } catch (error) {
@@ -30,9 +44,32 @@ async function testConnection() {
 
 // Execute query with error handling
 async function execute(query, params = []) {
+  if (!db) {
+    await initializeDatabase();
+  }
+  
   try {
-    const [rows] = await pool.query(query, params);
-    return rows;
+    // Convert MySQL syntax to SQLite when needed
+    let sqliteQuery = query;
+    
+    // Convert MySQL placeholders to SQLite format
+    if (params.length > 0) {
+      // Replace ? with numbered parameters for better compatibility
+      params.forEach((param, index) => {
+        sqliteQuery = sqliteQuery.replace('?', `?${index + 1}`);
+      });
+    }
+    
+    if (query.trim().toLowerCase().startsWith('select')) {
+      const rows = await db.all(query, params);
+      return rows;
+    } else if (query.trim().toLowerCase().startsWith('insert')) {
+      const result = await db.run(query, params);
+      return { insertId: result.lastID, affectedRows: result.changes };
+    } else {
+      const result = await db.run(query, params);
+      return { affectedRows: result.changes };
+    }
   } catch (error) {
     logger.error('Database query error:', { query, params, error: error.message });
     throw error;
@@ -41,23 +78,25 @@ async function execute(query, params = []) {
 
 // Transaction helper
 async function transaction(callback) {
-  const connection = await pool.getConnection();
+  if (!db) {
+    await initializeDatabase();
+  }
+  
   try {
-    await connection.beginTransaction();
-    const result = await callback(connection);
-    await connection.commit();
+    await db.exec('BEGIN TRANSACTION');
+    const result = await callback(db);
+    await db.exec('COMMIT');
     return result;
   } catch (error) {
-    await connection.rollback();
+    await db.exec('ROLLBACK');
     throw error;
-  } finally {
-    connection.release();
   }
 }
 
 module.exports = {
-  pool,
+  db,
   execute,
   transaction,
-  testConnection
+  testConnection,
+  initializeDatabase
 };

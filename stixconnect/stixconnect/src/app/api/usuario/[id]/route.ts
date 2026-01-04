@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../../lib/db';
+import db from '../../../../lib/database';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const [rows] = await db.query('SELECT * FROM pacientes WHERE id = ?', [params.id]);
+    const { id } = await params;
+    const [rows] = await db.query('SELECT * FROM pacientes WHERE id = ?', [id]);
 
     if ((rows as any[]).length === 0) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });

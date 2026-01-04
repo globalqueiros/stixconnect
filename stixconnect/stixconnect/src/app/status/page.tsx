@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar/page';
+import SideNav from '../../components/SideNav';
 import { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -111,7 +111,7 @@ export default function Status() {
 
     return (
         <div className="flex h-screen">
-            <Sidebar children={undefined} />
+            <SideNav isOpen={false} />
             <div className="flex flex-col flex-grow p-2.5">
                 <h2 className="text-xl font-bold mb-3 mt-3">Meus Cadastros</h2>
                 <div className="w-full overflow-x-auto">
