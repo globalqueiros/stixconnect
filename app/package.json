@@ -1,0 +1,53 @@
+{
+  "name": "stixconnect-workspace",
+  "version": "1.0.0",
+  "description": "StixConnect - Sistema de Telemedicina",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd stixconnect/stixconnect && npm run dev",
+    "dev:backend": "cd stixconnect-backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:admin": "cd nexus_admin/nexus_admin && npm run dev -- --port 3001",
+    "dev:integrated": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:admin\"",
+    "build": "npm run build:frontend && npm run build:admin",
+    "build:frontend": "cd stixconnect/stixconnect && npm run build",
+    "build:admin": "cd nexus_admin/nexus_admin && npm run build",
+    "build:backend": "cd stixconnect-backend && docker build -t stixconnect-backend .",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd stixconnect/stixconnect && npm run start",
+    "start:backend": "cd stixconnect-backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "start:admin": "cd nexus_admin/nexus_admin && npm run start -- --port 3001",
+    "install:all": "npm install && cd stixconnect/stixconnect && npm install && cd ../../nexus_admin/nexus_admin && npm install && cd ../../stixconnect-backend && pip install -r requirements.txt",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "backup:db": "node scripts/backup-db.js",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd stixconnect-backend && pytest",
+    "test:frontend": "cd stixconnect/stixconnect && npm test",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd stixconnect/stixconnect && npm run lint",
+    "lint:backend": "cd stixconnect-backend && flake8 app/",
+    "migrate": "cd stixconnect-backend && python scripts/migrate_data.py",
+    "setup": "npm run setup:frontend && npm run setup:backend",
+    "setup:frontend": "cd stixconnect/stixconnect && npm install",
+    "setup:backend": "cd stixconnect-backend && pip install -r requirements.txt",
+    "clean": "npm run clean:frontend && npm run clean:backend",
+    "clean:frontend": "cd stixconnect/stixconnect && rm -rf .next node_modules",
+    "clean:backend": "cd stixconnect-backend && find . -type d -name __pycache__ -delete && find . -name '*.pyc' -delete"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stixconnect/stixconnect.git"
+  },
+  "author": "StixConnect Team",
+  "license": "UNLICENSED"
+}

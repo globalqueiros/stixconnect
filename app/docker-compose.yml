@@ -1,0 +1,166 @@
+# StixConnect - Docker Compose
+# Orquestração de todos os serviços
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Frontend Next.js
+  # ============================================
+  frontend:
+    build:
+      context: ./stixconnect/stixconnect
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://backend:8000
+    container_name: stixconnect-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-stixconnect-nextauth-secret}
+      - ZOOM_ACCOUNT_ID=${ZOOM_ACCOUNT_ID:-}
+      - ZOOM_CLIENT_ID=${ZOOM_CLIENT_ID:-}
+      - ZOOM_CLIENT_SECRET=${ZOOM_CLIENT_SECRET:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-stixconnect-files}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID:-}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN:-}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - stixconnect-network
+
+  # ============================================
+  # Backend FastAPI
+  # ============================================
+  backend:
+    build:
+      context: ./stixconnect-backend
+      dockerfile: Dockerfile
+    container_name: stixconnect-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql://stixconnect:${DB_PASSWORD:-stixconnect123}@db:3306/stixconnect
+      - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - ZOOM_ACCOUNT_ID=${ZOOM_ACCOUNT_ID:-}
+      - ZOOM_CLIENT_ID=${ZOOM_CLIENT_ID:-}
+      - ZOOM_CLIENT_SECRET=${ZOOM_CLIENT_SECRET:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-stixconnect-files}
+      - DEBUG=false
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000,https://stixconnect.com
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend-uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - stixconnect-network
+
+  # ============================================
+  # Banco de Dados MySQL
+  # ============================================
+  db:
+    image: mysql:8.0
+    container_name: stixconnect-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=stixconnect
+      - MYSQL_USER=stixconnect
+      - MYSQL_PASSWORD=${DB_PASSWORD:-stixconnect123}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - stixconnect-network
+
+  # ============================================
+  # Redis para Cache e Sessões
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: stixconnect-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - stixconnect-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ============================================
+  # Nexus Admin (opcional)
+  # ============================================
+  admin:
+    build:
+      context: ./nexus_admin/nexus_admin
+      dockerfile: Dockerfile
+    container_name: stixconnect-admin
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - stixconnect-network
+    profiles:
+      - admin  # Só inicia com: docker-compose --profile admin up
+
+# ============================================
+# Volumes persistentes
+# ============================================
+volumes:
+  mysql-data:
+    driver: local
+  backend-uploads:
+    driver: local
+  redis-data:
+    driver: local
+
+# ============================================
+# Rede
+# ============================================
+networks:
+  stixconnect-network:
+    driver: bridge
