@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  color: black;
+  background: white;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+hr {
+  border: 01px solid #ccc;
+  padding: 2vh;
+}
+
+a {
+  font-size: 14px;
+  color: black;
+}
+
+a:hover {
+  color: #25a096;
+}
+
+input{
+  font-size: 15px;
+}
+
+small {
+  font-size: 12px;
+}
+
+p {
+  color: black;
+}
+
+strong {
+  color: black;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+h2 {
+  font-size: 30px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+h4 {
+  font-size: 18px;
+}
+
+h5 {
+  font-size: 16px;
+}
+
+h6 {
+  font-size: 14px;
+}
+
+.top-17 {
+  top: 2rem;
+}
+
+.top-14 {
+  top: 2rem;
+}
+
+.plan-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .plan-details {
+    padding: 1rem;
+  }
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 1ch !important;
+}
+
+input[name] {
+  font-size: 15px;
+}
+
+.fc .fc-daygrid-event-harness {
+  background-color: #dddddd;
+  margin: .6vh 0;
+}
+
+.fc .fc-daygrid-day-frame {
+  cursor: pointer;
+}
+
+.fc-daygrid-day-number {
+  color: #10c4b5 !important;
+}
+
+.fc-col-header-cell-cushion {
+  color: #10c4b5 !important;
+  font-weight: 600;
+}
+
+.fc-direction-ltr .fc-button-group>.fc-button:not(:last-child),
+.fc-direction-ltr .fc-button-group>.fc-button:not(:first-child) {
+  background-color: #10c4b5;
+  border: 01px solid #07aa9d;
+}
+
+.fc-direction-ltr .fc-toolbar>*> :not(:first-child) {
+  background-color: #07aa9d;
+  border: 02px solid #07aa9d;
+}
+
+:root {
+  --fc-today-bg: #10c4b5 !important;
+}
