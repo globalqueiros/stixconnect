@@ -1,9 +1,11 @@
-'use client';
-import Image from 'next/image';
-import { Mail, ChevronDown, LogOut, Settings, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+"use client";
 
-interface Colaborador {
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { Mail, ChevronDown, LogOut, Settings, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+interface UserData {
   id?: string;
   nome?: string;
   email?: string;
@@ -11,8 +13,9 @@ interface Colaborador {
 }
 
 export function Navbar() {
+  const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [user, setUser] = useState<Colaborador | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -20,7 +23,6 @@ export function Navbar() {
       try {
         const res = await fetch("/api/user", { cache: "no-store" });
         
-        // Verificar se a resposta é JSON antes de tentar fazer parse
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           console.error("Resposta não é JSON:", contentType);
@@ -37,7 +39,6 @@ export function Navbar() {
         setUser(data);
       } catch (err: any) {
         console.error("Erro ao buscar usuário:", err);
-        // Se o erro for de parsing JSON, pode ser que recebemos HTML
         if (err.message?.includes("JSON") || err.message?.includes("Unexpected token")) {
           setError("Erro: servidor retornou resposta inválida");
         } else {
@@ -48,6 +49,11 @@ export function Navbar() {
 
     fetchUser();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/");
+  };
 
   return (
     <nav className="flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 shadow-sm">
@@ -87,28 +93,28 @@ export function Navbar() {
           {isProfileOpen && (
             <div className="absolute right-0 z-50 mt-2 w-56 bg-white rounded-lg shadow-xl py-1 ring-1 ring-black ring-opacity-5 transition-opacity duration-150 ease-out origin-top-right">
               <a
-                href="/profile"
-                className="flex items-center px-4 py-2 text-sm text-black hover:bg-[#10c4b5]"
+                href="/paciente/perfil"
+                className="flex items-center px-4 py-2 text-sm text-black hover:bg-[#10C4B5]"
               >
                 <User className="w-4 h-4 mr-2" />
                 Meu Perfil
               </a>
 
               <a
-                href="/settings"
-                className="flex items-center px-4 py-2 text-sm text-black hover:bg-[#10c4b5]"
+                href="/paciente/configuracoes"
+                className="flex items-center px-4 py-2 text-sm text-black hover:bg-[#10C4B5]"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Configurações
               </a>
 
-              <a
-                href="/logout"
-                className="flex items-center px-4 py-2 text-sm text-black hover:bg-[#10c4b5]"
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-[#10C4B5]"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
-              </a>
+              </button>
             </div>
           )}
         </div>

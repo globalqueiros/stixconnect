@@ -112,6 +112,14 @@ def change_password(
 admin_router = APIRouter(prefix="/admin/users", tags=["Admin - Usuários"])
 
 
+# Handler explícito para OPTIONS (preflight CORS)
+@admin_router.options("/")
+@admin_router.options("/{path:path}")
+def options_handler():
+    """Handler para requisições OPTIONS (preflight CORS)"""
+    return {"message": "OK"}
+
+
 @admin_router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(
     user_data: "UserCreateAdmin",
@@ -120,59 +128,88 @@ def create_user(
 ):
     """Cria um novo usuário (admin only)"""
     
-    # Verificar se email já existe
-    existing_email = db.query(User).filter(User.email == user_data.email).first()
-    if existing_email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email já cadastrado"
-        )
-    
-    # Verificar se CPF já existe (se fornecido)
-    if user_data.cpf:
-        existing_cpf = db.query(User).filter(User.cpf == user_data.cpf).first()
-        if existing_cpf:
+    try:
+        # Limpar CPF (remover formatação)
+        cpf_limpo = None
+        if user_data.cpf:
+            cpf_limpo = user_data.cpf.replace(".", "").replace("-", "").strip()
+            if not cpf_limpo or len(cpf_limpo) < 11:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="CPF inválido. Deve conter pelo menos 11 dígitos."
+                )
+        
+        # Verificar se email já existe
+        existing_email = db.query(User).filter(User.email == user_data.email).first()
+        if existing_email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="CPF já cadastrado"
+                detail="Email já cadastrado"
             )
-    
-    # Validar senha
-    if len(user_data.senha) < 8:
+        
+        # Verificar se CPF já existe (se fornecido)
+        if cpf_limpo:
+            existing_cpf = db.query(User).filter(User.cpf == cpf_limpo).first()
+            if existing_cpf:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="CPF já cadastrado"
+                )
+        
+        # Validar senha
+        if len(user_data.senha) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A senha deve ter pelo menos 8 caracteres"
+            )
+        
+        # Criar hash da senha
+        senha_hash = get_password_hash(user_data.senha)
+        
+        # Limpar endereço (remover quebras de linha extras)
+        endereco_limpo = None
+        if user_data.endereco:
+            endereco_limpo = user_data.endereco.replace("\n", ", ").strip()
+        
+        # Criar novo usuário
+        new_user = User(
+            nome=user_data.nome,
+            email=user_data.email,
+            senha_hash=senha_hash,
+            role=user_data.role,
+            telefone=user_data.telefone,
+            cpf=cpf_limpo,
+            data_nascimento=user_data.data_nascimento,
+            especialidade=user_data.especialidade,
+            crm=user_data.crm,
+            endereco=endereco_limpo,
+            ativo=True
+        )
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        return new_user
+        
+    except HTTPException:
+        # Re-raise HTTPExceptions (já têm status code e mensagem corretos)
+        raise
+    except Exception as e:
+        # Capturar outros erros e retornar mensagem clara
+        import traceback
+        print(f"Erro ao criar usuário: {e}")
+        print(traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A senha deve ter pelo menos 8 caracteres"
+            detail=f"Erro ao criar usuário: {str(e)}"
         )
-    
-    # Criar hash da senha
-    senha_hash = get_password_hash(user_data.senha)
-    
-    # Criar novo usuário
-    new_user = User(
-        nome=user_data.nome,
-        email=user_data.email,
-        senha_hash=senha_hash,
-        role=user_data.role,
-        telefone=user_data.telefone,
-        cpf=user_data.cpf,
-        data_nascimento=user_data.data_nascimento,
-        especialidade=user_data.especialidade,
-        crm=user_data.crm,
-        endereco=user_data.endereco,
-        ativo=True
-    )
-    
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    return new_user
 
 
 @admin_router.get("/", response_model=dict)
 def list_users(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=500),
+    skip: Optional[int] = Query(0, ge=0),
+    limit: Optional[int] = Query(20, ge=1, le=500),
     role: Optional[str] = None,
     search: Optional[str] = None,
     ativo: Optional[bool] = None,
@@ -180,6 +217,10 @@ def list_users(
     current_user: User = Depends(require_admin)
 ):
     """Lista todos os usuários (admin only)"""
+    
+    # Garantir valores padrão se None
+    skip = skip or 0
+    limit = limit or 20
     
     query = db.query(User)
     

@@ -7,9 +7,9 @@ interface Paciente {
     prontuario: string;
     nome: string;
     data_nascimento: string;
-    email: string;
-    cpf: string;
-    endereco: string;
+    email: string | null;
+    cpf: string | null;
+    endereco: string | null;
 }
 
 export default function ProntuarioPage() {
@@ -118,21 +118,27 @@ export default function ProntuarioPage() {
                                             {new Date(p.data_nascimento).toLocaleDateString("pt-BR")}
                                         </td>
                                         <td className="p-3 text-sm border border-gray-300">
-                                            {p.cpf.replace(/\D/g, "").replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4")}
+                                            {p.cpf ? p.cpf.replace(/\D/g, "").replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") : "—"}
                                         </td>
-                                        <td className="p-3 text-sm border border-gray-300">{p.email}</td>
+                                        <td className="p-3 text-sm border border-gray-300">{p.email || "—"}</td>
                                         <td className="p-3 text-sm border border-gray-300">
-                                            {p.endereco.includes('-') ? p.endereco.split('-')[1].trim() : p.endereco}
+                                            {p.endereco ? (p.endereco.includes('-') ? p.endereco.split('-')[1].trim() : p.endereco) : "—"}
                                         </td>
                                         <td className="p-0 text-sm border border-gray-300 text-center">
-                                            <a
-                                                href={`/prontuario/${p.prontuario}`}
-                                                rel="noopener noreferrer"
-                                                title="Ver Prontuário"
-                                                className="inline-flex justify-center items-center w-full text-black"
-                                            >
-                                                <FileText className="w-4.5 h-4.5" />
-                                            </a>
+                                            {p.prontuario ? (
+                                                <a
+                                                    href={`/medico/prontuario/${p.prontuario}`}
+                                                    rel="noopener noreferrer"
+                                                    title="Ver Prontuário"
+                                                    className="inline-flex justify-center items-center w-full text-black hover:text-[#10C4B5] transition-colors"
+                                                >
+                                                    <FileText className="w-4.5 h-4.5" />
+                                                </a>
+                                            ) : (
+                                                <span className="text-gray-400" title="Prontuário não disponível">
+                                                    <FileText className="w-4.5 h-4.5" />
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))

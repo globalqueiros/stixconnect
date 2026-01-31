@@ -147,9 +147,9 @@ export default function AgendaCard() {
                       <span className="text-sm text-gray-600">{c.procedimento}</span>
                     </div>
                     <div className="flex space-x-3">
-                      {c.zoom_link && (
+                      {c.zoom_link || c.zoom_join_url ? (
                         <a
-                          href="/consultorio_online/"
+                          href={`/medico/consultorio_online?id=${c.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Entrar na Sala de Consulta"
@@ -157,16 +157,25 @@ export default function AgendaCard() {
                         >
                           <SquareArrowOutUpRight className="w-5 h-5" />
                         </a>
+                      ) : null}
+                      {c.prontuario ? (
+                        <a
+                          href={`/medico/prontuario/${c.prontuario}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Ver Prontuário"
+                          className="p-2 text-sm text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 transition duration-150 shadow-md"
+                        >
+                          <FileText className="w-5 h-5" />
+                        </a>
+                      ) : (
+                        <span 
+                          title="Prontuário não disponível"
+                          className="p-2 text-sm text-gray-400 bg-gray-100 rounded-full cursor-not-allowed"
+                        >
+                          <FileText className="w-5 h-5" />
+                        </span>
                       )}
-                      <a
-                        href={`/prontuario/${c.prontuario}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Ver Prontuário"
-                        className="p-2 text-sm text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 transition duration-150 shadow-md"
-                      >
-                        <FileText className="w-5 h-5" />
-                      </a>
                     </div>
                   </li>
                 ))}

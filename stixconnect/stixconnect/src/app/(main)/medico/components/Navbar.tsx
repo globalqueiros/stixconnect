@@ -19,6 +19,15 @@ export function Navbar() {
     async function fetchUser() {
       try {
         const res = await fetch("/api/user", { cache: "no-store" });
+        
+        // Verificar se a resposta é JSON antes de tentar fazer parse
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("Resposta não é JSON:", contentType);
+          setError("Erro: resposta inválida do servidor");
+          return;
+        }
+
         const data = await res.json();
 
         if (!res.ok) {
@@ -26,9 +35,14 @@ export function Navbar() {
           return;
         }
         setUser(data);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Erro ao buscar usuário:", err);
-        setError("Erro ao conectar ao servidor.");
+        // Se o erro for de parsing JSON, pode ser que recebemos HTML
+        if (err.message?.includes("JSON") || err.message?.includes("Unexpected token")) {
+          setError("Erro: servidor retornou resposta inválida");
+        } else {
+          setError("Erro ao conectar ao servidor.");
+        }
       }
     }
 

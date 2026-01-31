@@ -23,6 +23,9 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   const ROLE_ROUTES: Record<number, string> = {
+    1: "/administrador",
+    2: "/supervisor",
+    3: "/atendente",
     4: "/atendente",
     5: "/medico",
     6: "/enfermeiro",
@@ -33,7 +36,8 @@ export async function middleware(req: NextRequest) {
     11: "/psicologa",
     12: "/fonoaudiologia",
     13: "/acupuntura",
-    14: "/psicopedagogia-clinica",
+    14: "/psicopedagoga_clinica",
+    15: "/paciente", // Role de paciente
   };
 
   const allowedBaseRoute = ROLE_ROUTES[nivel];
@@ -48,3 +52,18 @@ export async function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+// Configuração do matcher para aplicar o middleware apenas nas rotas necessárias
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+};

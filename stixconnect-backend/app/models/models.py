@@ -66,7 +66,7 @@ class User(Base):
     data_nascimento = Column(DateTime)
     ativo = Column(Boolean, default=True)
     # Disponibilidade para roteamento em tempo real
-    disponibilidade = Column(Enum(AvailabilityStatus), default=AvailabilityStatus.ONLINE, nullable=False)
+    disponibilidade = Column(Enum(AvailabilityStatus, native_enum=False, values_callable=lambda x: [e.value for e in AvailabilityStatus]), default=AvailabilityStatus.ONLINE, nullable=False)
     pacientes_atuais = Column(Integer, default=0, nullable=False)
     limite_pacientes = Column(Integer, default=3, nullable=False)
     

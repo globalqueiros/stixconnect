@@ -98,6 +98,11 @@ class TriagemUpdate(BaseModel):
     frequencia_cardiaca: Optional[str] = None
     saturacao_oxigenio: Optional[str] = None
 
+class TransferToProfessionalRequest(BaseModel):
+    """Schema para encaminhar paciente para profissional após triagem"""
+    profissional_id: int = Field(..., description="ID do profissional (médico, fisioterapeuta, etc.)")
+    observacoes: Optional[str] = Field(None, description="Observações da triagem")
+
 class TriagemResponse(TriagemBase):
     id: int
     consulta_id: int

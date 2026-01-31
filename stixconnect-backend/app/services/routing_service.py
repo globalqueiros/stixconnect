@@ -81,11 +81,16 @@ class RoutingService:
     ) -> Consulta:
         """
         Transfere consulta para profissional (médico, fisioterapeuta, etc.).
+        Usa o campo medico_id para armazenar o ID de qualquer profissional.
         """
         consulta.medico_id = professional.id
         consulta.status = ConsultaStatus.AGUARDANDO_MEDICO
+        
+        # Incrementar contador de pacientes do profissional
+        professional.pacientes_atuais = (professional.pacientes_atuais or 0) + 1
 
         db.add(consulta)
+        db.add(professional)
         db.commit()
         db.refresh(consulta)
 
